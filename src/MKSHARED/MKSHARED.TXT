@@ -1,0 +1,37 @@
+MKSHARED - A HP48 Slot Card Maker for Emu48
+10/04/20 (c) by Christoph Gieﬂelink, c dot giesselink at gmx dot de
+
+
+	************
+	* MKSHARED *
+	************
+
+This Program allows you to create slot 2 RAM cards for the HP48 emulation on
+Emu48. Replace the MKSHARED.EXE file in the Emu48 directory with this one
+please.
+
+To create a Port 2 RAM Card, call the program, select the RAM Card size, enter
+the card file name and press the 'Create' button. That's it. Please remember,
+this program replace the destination file without any request!
+
+On macOS and Linux MkShared is a command line program. Open a terminal and
+type for example
+	mkshared 128 SHARED.BIN
+to create a 128KB RAM Card with the name SHARED.BIN. Valid RAM Card sizes are
+32, 128, 256, 512, 1024, 2048 and 4096 KB. Without the file name the card is
+written to SHARED.BIN. To build the program, type
+	cc -O2 -o mkshared MKSHARED.C
+
+For using RAM cards inside the Emu48 emulator, read the Emu48.txt file please.
+
+
+	***************
+	* LEGAL STUFF *
+	***************
+
+MKSHARED - A HP48 Slot Card Maker for Emu48
+Copyright (C) 2020 Christoph Gieﬂelink
+
+This program is a rewritten version of "Casey's Emu48 Ram Card Creator". The
+GUI is quite similar to his version, but share no code with it. The program is
+freeware. Use it at your own risk.

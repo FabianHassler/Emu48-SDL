@@ -1,0 +1,118 @@
+Emu48/SDL V1.68 for macOS and Linux (unofficial SDL3 port)
+----------------------------------------------------------
+
+This is Emu48 V1.68 by Christoph Giesselink and Sebastien Carlier for macOS
+and Linux. The emulation and the dialogs are the original code of Emu48 for
+Windows, only the window system part is replaced by the SDL3 library and the
+Nuklear GUI library. Emu48 for Windows: https://hp.giesselink.com/emu48.htm
+
+Emu48/SDL is not maintained by Christoph Giesselink, please report problems
+of this port at https://github.com/FabianHassler/Emu48-SDL/issues
+
+
+1.) Installation
+
+macOS (macOS 11 or later)
+
+There are packages for Apple Silicon (...-macOS-AppleSilicon.zip) and for Intel
+processors (...-macOS-Intel.zip). Unpack the zip file and copy the Emu48 folder to any place, e.g. into your
+Applications folder. The app isn't signed by Apple, so macOS refuses to open it
+at the first start. Open it with a right click on Emu48.app and "Open", or
+allow it in System Settings / Privacy & Security / "Open Anyway". The same is
+done in a terminal with
+	xattr -dr com.apple.quarantine Emu48.app
+
+Linux (x86-64, glibc 2.28 or later, X11 or XWayland)
+
+Unpack the tar.gz file and start the program with ./emu48 in its folder. The
+program has no further dependencies than the X11 and sound libraries of a
+desktop installation (PulseAudio or PipeWire). The file dialogs need the
+xdg-desktop-portal service of the desktop or the zenity program.
+
+Windows
+
+Use the original Emu48 package of Christoph Giesselink.
+
+
+2.) First start
+
+Emu48 needs a ROM image of your calculator and a KML script with its bitmap.
+For copyright reasons no ROM images are included. KML scripts are available
+on https://hp.giesselink.com/emu48.htm and https://www.hpcalc.org. Copy the
+ROM image, the KML script and the bitmap into the Emu48 directory. This is the
+folder with Emu48.app on macOS and the current directory at the program start
+on Linux. You can change the Emu48 directory in the dialog "Choose Your KML
+Script". Read the manual (Help/Help Topics) for all further details, it is
+part of the program.
+
+The settings are saved in
+	macOS: ~/Library/Application Support/Emu48/Emu48.ini
+	Linux: ~/.local/share/Emu48/Emu48.ini
+
+
+3.) Differences to the Windows version
+
+- a double click in the lists of the debugger can also be done with
+  Option+click (Alt+click on Linux) or with the middle mouse button
+- on macOS Control+click opens the context menu like a right click and the
+  Command key works like the Control key in keyboard shortcuts
+- sub menus are shown as expandable items inside their menu
+- the PC keys are mapped by their position on a US keyboard, the letters by
+  their label, so the keyboard mappings of the KML scripts work with any
+  keyboard layout
+- the serial ports are the devices /dev/cu.* (macOS) and /dev/ttyS*,
+  /dev/ttyUSB*, /dev/ttyACM* (Linux), on Linux your user must be member of
+  the group owning the device (usually dialout)
+- the baudrates 1920, 3840, 7680 and 15360 work when the serial driver
+  supports them (most USB serial adapters)
+- no DDE interface (a Windows-only way for other programs to exchange objects
+  with Emu48) and no CONVERT program
+
+
+4.) MkShared
+
+MkShared creates a RAM card file for port 2 of the HP48SX/GX. Open a terminal
+and type for example
+	./mkshared 128 SHARED.BIN
+to create a 128KB RAM card. Valid sizes are 32, 128, 256, 512, 1024, 2048
+and 4096 KB.
+
+
+5.) Building from source
+
+You need a C compiler, CMake 3.16 or later and SDL3 3.2 or later.
+
+macOS:          brew install cmake sdl3
+Debian, Ubuntu: sudo apt install build-essential cmake libsdl3-dev
+Fedora:         sudo dnf install gcc cmake SDL3-devel
+
+Build in the source folder with
+	cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+	cmake --build build
+The program is build/Emu48.app on macOS and build/emu48 on Linux.
+
+The release packages link SDL3 statically. Build SDL3 3.4 from its source
+with
+	cmake -S SDL3-3.4.20 -B sdl-build -DCMAKE_BUILD_TYPE=MinSizeRel \
+	  -DCMAKE_INSTALL_PREFIX=$HOME/sdl3 -DSDL_SHARED=OFF -DSDL_STATIC=ON \
+	  -DSDL_TEST_LIBRARY=OFF -DSDL_GPU=OFF -DSDL_CAMERA=OFF \
+	  -DSDL_JOYSTICK=OFF -DSDL_HAPTIC=OFF -DSDL_HIDAPI=OFF -DSDL_SENSOR=OFF \
+	  -DSDL_TRAY=OFF -DSDL_VULKAN=OFF -DSDL_OPENGLES=OFF
+	cmake --build sdl-build && cmake --install sdl-build
+and add -DCMAKE_PREFIX_PATH=$HOME/sdl3 to the Emu48 configuration. For macOS
+add -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 to both configurations.
+
+MkShared is built with Emu48 as build/mkshared, or as a single file with
+	cc -O2 -o mkshared src/MKSHARED/MKSHARED.C
+
+
+6.) License
+
+Emu48 is free software under the GNU General Public License version 2 or
+later, see COPYING.TXT.
+
+Emu48: Copyright (C) 1995 Sebastien Carlier, Copyright (C) Christoph Giesselink
+SDL3 port: Copyright (C) 2026 Fabian Hassler
+SDL3: Copyright (C) Sam Lantinga, zlib license (https://libsdl.org)
+Nuklear: public domain / MIT license (https://github.com/Immediate-Mode-UI/Nuklear)
+LodePNG: Copyright (C) Lode Vandevenne, zlib license

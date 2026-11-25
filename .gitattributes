@@ -1,0 +1,5 @@
+* text=auto eol=lf
+*.BMP binary
+*.bmp binary
+*.ICO binary
+*.ico binary

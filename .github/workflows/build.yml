@@ -1,0 +1,156 @@
+# Build Emu48/SDL for macOS (Apple Silicon and Intel, separate packages to keep them small)
+# and Linux (x86_64) with a static SDL3. A pushed tag v* creates a GitHub release with the packages.
+
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+env:
+  SDL_VERSION: 3.4.20
+  # SDL3 without the subsystems Emu48 doesn't use
+  SDL_OPTIONS: >-
+    -DSDL_SHARED=OFF -DSDL_STATIC=ON -DSDL_TEST_LIBRARY=OFF -DSDL_GPU=OFF
+    -DSDL_CAMERA=OFF -DSDL_JOYSTICK=OFF -DSDL_HAPTIC=OFF -DSDL_HIDAPI=OFF
+    -DSDL_SENSOR=OFF -DSDL_TRAY=OFF -DSDL_VULKAN=OFF -DSDL_OPENGLES=OFF
+
+jobs:
+  # a release tag v<version> must match EMU48SDL_VERSION in CMakeLists.txt (shown in the About box)
+  version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check version
+        run: |
+          V=$(sed -n 's/^set(EMU48SDL_VERSION \([0-9.]*\))$/\1/p' CMakeLists.txt)
+          echo "EMU48SDL_VERSION $V"
+          if [[ $GITHUB_REF == refs/tags/* && "$GITHUB_REF_NAME" != "v$V" ]]; then
+            echo "::error::tag $GITHUB_REF_NAME doesn't match EMU48SDL_VERSION $V in CMakeLists.txt"; exit 1
+          fi
+
+  macos:
+    needs: version
+    runs-on: macos-14
+    strategy:
+      matrix:
+        include:
+          - arch: arm64
+            name: AppleSilicon
+          - arch: x86_64
+            name: Intel
+    env:
+      MACOSX_DEPLOYMENT_TARGET: '11.0'
+      ARCHS: ${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache SDL3
+        id: cache-sdl
+        uses: actions/cache@v4
+        with:
+          path: ~/sdl3
+          key: sdl3-${{ env.SDL_VERSION }}-macos-${{ matrix.arch }}
+
+      - name: Build SDL3
+        if: steps.cache-sdl.outputs.cache-hit != 'true'
+        run: |
+          curl -sSfL https://github.com/libsdl-org/SDL/releases/download/release-$SDL_VERSION/SDL3-$SDL_VERSION.tar.gz | tar xz
+          cmake -S SDL3-$SDL_VERSION -B sdl-build -DCMAKE_BUILD_TYPE=MinSizeRel \
+            -DCMAKE_INSTALL_PREFIX=$HOME/sdl3 "-DCMAKE_OSX_ARCHITECTURES=$ARCHS" $SDL_OPTIONS
+          cmake --build sdl-build -j4 && cmake --install sdl-build
+
+      - name: Build Emu48
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$HOME/sdl3 \
+            "-DCMAKE_OSX_ARCHITECTURES=$ARCHS"
+          cmake --build build -j4
+          lipo -info build/Emu48.app/Contents/MacOS/Emu48
+
+      - name: Package
+        run: |
+          V=${GITHUB_REF_NAME#v}; [[ $GITHUB_REF == refs/tags/* ]] || V=${GITHUB_SHA::7}
+          mkdir -p pkg/Emu48
+          cp -R build/Emu48.app pkg/Emu48/
+          cp build/mkshared COPYING.TXT INSTALL.TXT src/MKSHARED/MKSHARED.TXT pkg/Emu48/
+          codesign --force --deep -s - pkg/Emu48/Emu48.app	# ad hoc signature, needed on Apple Silicon
+          (cd pkg && ditto -c -k --keepParent Emu48 ../Emu48-SDL-$V-macOS-${{ matrix.name }}.zip)
+          echo "PKG=Emu48-SDL-$V-macOS-${{ matrix.name }}.zip" >> $GITHUB_ENV
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.arch }}
+          path: ${{ env.PKG }}
+
+  linux:
+    needs: version
+    runs-on: ubuntu-latest
+    # AlmaLinux 8 (glibc 2.28): the binary runs on most Linux distributions since 2018
+    container: almalinux:8
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Install build tools
+        run: |
+          dnf install -y dnf-plugins-core && dnf config-manager --set-enabled powertools
+          dnf install -y gcc make cmake git tar gzip file \
+            libX11-devel libXext-devel libXrandr-devel libXcursor-devel libXi-devel libXfixes-devel \
+            libXrender-devel libXScrnSaver-devel alsa-lib-devel pulseaudio-libs-devel dbus-devel
+
+      - uses: actions/checkout@v4
+
+      - name: Cache SDL3
+        id: cache-sdl
+        uses: actions/cache@v4
+        with:
+          path: /opt/sdl3
+          key: sdl3-${{ env.SDL_VERSION }}-almalinux8-x86_64
+
+      - name: Build SDL3
+        if: steps.cache-sdl.outputs.cache-hit != 'true'
+        run: |
+          curl -sSfL https://github.com/libsdl-org/SDL/releases/download/release-$SDL_VERSION/SDL3-$SDL_VERSION.tar.gz | tar xz
+          cmake -S SDL3-$SDL_VERSION -B sdl-build -DCMAKE_BUILD_TYPE=MinSizeRel \
+            -DCMAKE_INSTALL_PREFIX=/opt/sdl3 -DSDL_WAYLAND=OFF $SDL_OPTIONS
+          cmake --build sdl-build -j4 && cmake --install sdl-build
+
+      - name: Build Emu48
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/opt/sdl3
+          cmake --build build -j4
+          file build/emu48
+          objdump -T build/emu48 | grep -o 'GLIBC_[0-9.]*' | sort -Vu | tail -1
+
+      - name: Package
+        run: |
+          V=${GITHUB_REF_NAME#v}; [[ $GITHUB_REF == refs/tags/* ]] || V=${GITHUB_SHA::7}
+          mkdir -p pkg/emu48
+          cp build/emu48 build/mkshared COPYING.TXT INSTALL.TXT src/MKSHARED/MKSHARED.TXT pkg/emu48/
+          tar -C pkg -czf Emu48-SDL-$V-Linux-x86_64.tar.gz emu48
+          echo "PKG=Emu48-SDL-$V-Linux-x86_64.tar.gz" >> $GITHUB_ENV
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: ${{ env.PKG }}
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [macos, linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --title "Emu48/SDL ${GITHUB_REF_NAME#v}" \
+            --notes "Emu48 1.68 for macOS and Linux, see the README for installation." Emu48-SDL-*
