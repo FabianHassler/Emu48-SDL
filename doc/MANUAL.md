@@ -64,9 +64,9 @@ file dialogs need the xdg-desktop-portal service of the desktop or the `zenity` 
 
 Then copy your ROM images, KML scripts and calculator images into the **Emu48 directory**
 and adjust the ROM image name to the name used in the corresponding KML script. At the
-first start the Emu48 directory is the current directory: the folder with `Emu48.app` when
-macOS starts the app (from the Finder or with `open`), the current directory of the terminal
-when you start `emu48` on Linux or `Emu48.app/Contents/MacOS/Emu48` on macOS. It is saved in
+first start the Emu48 directory is the folder `~/Documents/Emu48` when macOS starts the app
+(from the Finder or with `open`), created if it doesn't exist, and the current directory of
+the terminal when you start `emu48` on Linux or `Emu48.app/Contents/MacOS/Emu48` on macOS. It is saved in
 the settings; you can change it in the dialog *Choose Your KML Script*.
 
 The settings, which Emu48 for Windows keeps in the registry at `HKCU\Software\Emu48`, are
@@ -619,6 +619,12 @@ file is replaced without question. Enter the file name in *Settings → Memory �
 Emu48 — an HP38G/39G/40G/48SX/48GX/49G emulator\
 Copyright © 1995 Sébastien Carlier, Copyright © Christoph Gießelink\
 Emu48/SDL: Copyright © 2026 Fabian Hassler
+
+Parts of other projects are used under their licenses: the disassembler by Eddie C. Dost
+(Copyright © 1994, GPL), [SDL3](https://libsdl.org) by Sam Lantinga (zlib license),
+[Nuklear](https://github.com/Immediate-Mode-UI/Nuklear) (public domain / MIT license) with
+the ProggyClean font by Tristan Grimmer (MIT license), and LodePNG by Lode Vandevenne
+(zlib license).
 
 This program is free software; you can redistribute it and/or modify it under the terms of
 the GNU General Public License as published by the Free Software Foundation; either version 2

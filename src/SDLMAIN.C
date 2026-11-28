@@ -696,6 +696,9 @@ int main(int argc, char *argv[])
 {
 	TCHAR  szTemp[MAX_PATH+8];
 	LPTSTR lpFilePart;
+	#if defined __APPLE__
+	LPCTSTR lpszDocuments;
+	#endif
 
 	SDL_SetHint(SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK,"1"); // Ctrl+click opens context menu
 	SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH,"1"); // click into inactive window like on Windows
@@ -710,16 +713,12 @@ int main(int argc, char *argv[])
 	ppArgv = (LPCTSTR *) argv;				// command line arguments
 
 	#if defined __APPLE__
-	// started by the Finder in "/", the folder of Emu48.app like the folder of Emu48.exe on Windows
-	if (GetCurrentDirectory(ARRAYSIZEOF(szTemp),szTemp) == 1 && SDL_GetBasePath() != NULL)
+	// started by the Finder in "/", Emu48 directory is the folder Emu48 in the Documents folder
+	if (GetCurrentDirectory(ARRAYSIZEOF(szTemp),szTemp) == 1 && (lpszDocuments = SDL_GetUserFolder(SDL_FOLDER_DOCUMENTS)) != NULL)
 	{
-		lstrcpyn(szTemp,SDL_GetBasePath(),ARRAYSIZEOF(szTemp));
-		if ((lpFilePart = strstr(szTemp,_T(".app/"))) != NULL)
-		{
-			*lpFilePart = 0;				// app bundle name
-			*strrchr(szTemp,_T('/')) = 0;	// folder of app bundle
-			SetCurrentDirectory(szTemp);
-		}
+		SDL_snprintf(szTemp,ARRAYSIZEOF(szTemp),_T("%sEmu48"),lpszDocuments);
+		SDL_CreateDirectory(szTemp);		// create at the first start
+		SetCurrentDirectory(szTemp);
 	}
 	#endif
 

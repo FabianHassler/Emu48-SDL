@@ -79,8 +79,8 @@ HP has allowed the download of the HP48 ROM images since 2000.
    HP38G, HP39G, HP40G and HP49G, are on the
    [emulator page of hpcalc.org](https://www.hpcalc.org/hp48/pc/emulators/).
 3. Put the ROM image and the unpacked KML scripts (`*.kml`, `*.kmi`, `*.bmp`) into one
-   folder, the **Emu48 directory**. At the first start this is the folder with `Emu48.app` on
-   macOS and the current directory on Linux.
+   folder, the **Emu48 directory**. At the first start this is the folder `Documents/Emu48`
+   in your home folder on macOS, created by Emu48, and the current directory on Linux.
 4. Start Emu48. In *Choose Your KML Script*, set the *Emu48 Directory* to this folder with
    the **…** button if needed, choose a script and press **OK**. The calculator starts with
    "Memory Clear".
@@ -176,6 +176,7 @@ Emu48/SDL is free software under the GNU General Public License version 2 or lat
 - SDL3: Copyright © Sam Lantinga, zlib license
 - Nuklear: public domain / MIT license
 - LodePNG: Copyright © Lode Vandevenne, zlib license
+- ProggyClean font (built into Nuklear): Copyright © Tristan Grimmer, MIT license
 
 HP and the names of the calculators are trademarks of HP Inc. This project is not affiliated
 with HP.

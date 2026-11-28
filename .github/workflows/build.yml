@@ -23,7 +23,7 @@ jobs:
   version:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Check version
         run: |
           V=$(sed -n 's/^set(EMU48SDL_VERSION \([0-9.]*\))$/\1/p' CMakeLists.txt)
@@ -34,7 +34,7 @@ jobs:
 
   macos:
     needs: version
-    runs-on: macos-14
+    runs-on: macos-15
     strategy:
       matrix:
         include:
@@ -46,11 +46,11 @@ jobs:
       MACOSX_DEPLOYMENT_TARGET: '11.0'
       ARCHS: ${{ matrix.arch }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Cache SDL3
         id: cache-sdl
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/sdl3
           key: sdl3-${{ env.SDL_VERSION }}-macos-${{ matrix.arch }}
@@ -80,7 +80,7 @@ jobs:
           (cd pkg && ditto -c -k --keepParent Emu48 ../Emu48-SDL-$V-macOS-${{ matrix.name }}.zip)
           echo "PKG=Emu48-SDL-$V-macOS-${{ matrix.name }}.zip" >> $GITHUB_ENV
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: macos-${{ matrix.arch }}
           path: ${{ env.PKG }}
@@ -101,11 +101,11 @@ jobs:
             libX11-devel libXext-devel libXrandr-devel libXcursor-devel libXi-devel libXfixes-devel \
             libXrender-devel libXScrnSaver-devel alsa-lib-devel pulseaudio-libs-devel dbus-devel
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Cache SDL3
         id: cache-sdl
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: /opt/sdl3
           key: sdl3-${{ env.SDL_VERSION }}-almalinux8-x86_64
@@ -115,7 +115,7 @@ jobs:
         run: |
           curl -sSfL https://github.com/libsdl-org/SDL/releases/download/release-$SDL_VERSION/SDL3-$SDL_VERSION.tar.gz | tar xz
           cmake -S SDL3-$SDL_VERSION -B sdl-build -DCMAKE_BUILD_TYPE=MinSizeRel \
-            -DCMAKE_INSTALL_PREFIX=/opt/sdl3 -DSDL_WAYLAND=OFF $SDL_OPTIONS
+            -DCMAKE_INSTALL_PREFIX=/opt/sdl3 -DSDL_WAYLAND=OFF -DSDL_X11_XTEST=OFF $SDL_OPTIONS
           cmake --build sdl-build -j4 && cmake --install sdl-build
 
       - name: Build Emu48
@@ -133,7 +133,7 @@ jobs:
           tar -C pkg -czf Emu48-SDL-$V-Linux-x86_64.tar.gz emu48
           echo "PKG=Emu48-SDL-$V-Linux-x86_64.tar.gz" >> $GITHUB_ENV
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: linux
           path: ${{ env.PKG }}
@@ -145,7 +145,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           merge-multiple: true
       - name: Create release

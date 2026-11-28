@@ -1,4 +1,4 @@
-Emu48/SDL V1.68 for macOS and Linux (unofficial SDL3 port)
+Emu48/SDL V1.68.1 for macOS and Linux (unofficial SDL3 port)
 ----------------------------------------------------------
 
 This is Emu48 V1.68 by Christoph Giesselink and Sebastien Carlier for macOS
@@ -40,8 +40,8 @@ Emu48 needs a ROM image of your calculator and a KML script with its bitmap.
 For copyright reasons no ROM images are included. KML scripts are available
 on https://hp.giesselink.com/emu48.htm and https://www.hpcalc.org. Copy the
 ROM image, the KML script and the bitmap into the Emu48 directory. This is the
-folder with Emu48.app on macOS and the current directory at the program start
-on Linux. You can change the Emu48 directory in the dialog "Choose Your KML
+folder ~/Documents/Emu48 on macOS, created at the first start, and the current
+directory at the program start on Linux. You can change the Emu48 directory in the dialog "Choose Your KML
 Script". Read the manual (Help/Help Topics) for all further details, it is
 part of the program.
 
@@ -60,7 +60,7 @@ The settings are saved in
 - the PC keys are mapped by their position on a US keyboard, the letters by
   their label, so the keyboard mappings of the KML scripts work with any
   keyboard layout
-- the serial ports are the devices /dev/cu.* (macOS) and /dev/ttyS*,
+- the serial ports are the devices /dev/tty.* (macOS) and /dev/ttyS*,
   /dev/ttyUSB*, /dev/ttyACM* (Linux), on Linux your user must be member of
   the group owning the device (usually dialout)
 - the baudrates 1920, 3840, 7680 and 15360 work when the serial driver
@@ -112,7 +112,9 @@ Emu48 is free software under the GNU General Public License version 2 or
 later, see COPYING.TXT.
 
 Emu48: Copyright (C) 1995 Sebastien Carlier, Copyright (C) Christoph Giesselink
+Disassembler: Copyright (C) 1994 Eddie C. Dost
 SDL3 port: Copyright (C) 2026 Fabian Hassler
 SDL3: Copyright (C) Sam Lantinga, zlib license (https://libsdl.org)
 Nuklear: public domain / MIT license (https://github.com/Immediate-Mode-UI/Nuklear)
 LodePNG: Copyright (C) Lode Vandevenne, zlib license
+ProggyClean font: Copyright (C) Tristan Grimmer, MIT license
